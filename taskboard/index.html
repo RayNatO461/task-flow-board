@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Task Flow Board - a lightweight Kanban board built with HTML, CSS and vanilla JavaScript." />
+  <title>Task Flow - Internship Assessment</title>
+  <!-- Apply the saved theme before the page paints, to avoid a light/dark flash -->
+  <script>
+    try {
+      const savedTheme = localStorage.getItem('taskflow.theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.dataset.theme = savedTheme || (prefersDark ? 'dark' : 'light');
+    } catch (error) {
+      document.documentElement.dataset.theme = 'light';
+    }
+  </script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- Header: title, theme switch and task statistics -->
+    <header class="app-header">
+      <div class="header-top">
+        <div class="brand">
+          <h1>Task Flow Board</h1>
+          <p>Organise and track your project tasks efficiently.</p>
+        </div>
+
+        <!-- Dark mode toggle (bonus) -->
+        <label class="theme-switch" title="Toggle dark mode">
+          <input type="checkbox" id="theme-toggle" aria-label="Dark mode" />
+          <span class="switch-track" aria-hidden="true">
+            <span class="switch-thumb"></span>
+          </span>
+          <span class="switch-label">Dark mode</span>
+        </label>
+      </div>
+
+      <!-- Task counter: active vs completed (bonus) -->
+      <div class="stats" aria-live="polite">
+        <div class="stat">
+          <span class="stat-value" id="stat-active">0</span>
+          <span class="stat-label">Active</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="stat-completed">0</span>
+          <span class="stat-label">Completed</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="stat-total">0</span>
+          <span class="stat-label">Total</span>
+        </div>
+        <div class="progress" aria-label="Completion progress">
+          <div class="progress-info">
+            <span>Progress</span>
+            <span id="stat-percent">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-bar" id="progress-bar"></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Controls: create tasks + filter / search -->
+    <section class="controls-section" aria-label="Task controls">
+      <form id="task-form" class="task-form" novalidate>
+        <div class="form-row">
+          <label class="field field-grow">
+            <span class="field-label">Title</span>
+            <input type="text" id="task-title" placeholder="Task title..." maxlength="80" required />
+          </label>
+          <label class="field">
+            <span class="field-label">Category</span>
+            <select id="task-category" required>
+              <option value="" disabled selected>Select Category</option>
+              <option value="Development">Development</option>
+              <option value="Design">Design</option>
+              <option value="Marketing">Marketing</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">Priority</span>
+            <select id="task-priority" required>
+              <option value="" disabled selected>Select Priority</option>
+              <option value="Low">Low Priority</option>
+              <option value="Medium">Medium Priority</option>
+              <option value="High">High Priority</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="field">
+          <span class="field-label">Description <small>(optional)</small></span>
+          <textarea id="task-description" rows="2" maxlength="300" placeholder="Add some details about the task..."></textarea>
+        </label>
+
+        <div class="form-footer">
+          <p class="form-error" id="form-error" role="alert"></p>
+          <button type="submit" class="btn btn-primary">+ Add Task</button>
+        </div>
+      </form>
+
+      <div class="filter-bar">
+        <input type="search" id="search-input" placeholder="Search tasks by title..." aria-label="Search tasks by title" />
+        <select id="category-filter" aria-label="Filter by category">
+          <option value="All">All Categories</option>
+          <option value="Development">Development</option>
+          <option value="Design">Design</option>
+          <option value="Marketing">Marketing</option>
+        </select>
+        <button type="button" class="btn btn-ghost" id="clear-completed">Clear completed</button>
+      </div>
+    </section>
+
+    <!-- Kanban columns (also drop zones for drag and drop) -->
+    <main class="board-container">
+      <section class="column" data-status="todo" aria-labelledby="title-todo">
+        <div class="column-header">
+          <h2 id="title-todo"><span class="dot dot-todo"></span>To Do</h2>
+          <span class="task-count" id="count-todo">0</span>
+        </div>
+        <div class="task-list" id="list-todo" data-status="todo"></div>
+      </section>
+
+      <section class="column" data-status="in-progress" aria-labelledby="title-in-progress">
+        <div class="column-header">
+          <h2 id="title-in-progress"><span class="dot dot-in-progress"></span>In Progress</h2>
+          <span class="task-count" id="count-in-progress">0</span>
+        </div>
+        <div class="task-list" id="list-in-progress" data-status="in-progress"></div>
+      </section>
+
+      <section class="column" data-status="completed" aria-labelledby="title-completed">
+        <div class="column-header">
+          <h2 id="title-completed"><span class="dot dot-completed"></span>Completed</h2>
+          <span class="task-count" id="count-completed">0</span>
+        </div>
+        <div class="task-list" id="list-completed" data-status="completed"></div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>Tip: drag a card to another column, or use the arrows on each card.</p>
+    </footer>
+  </div>
+
+  <!-- Toast notification (used for the "Undo delete" action) -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <span id="toast-message"></span>
+    <button type="button" class="toast-action" id="toast-undo">Undo</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
